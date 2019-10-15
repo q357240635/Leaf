@@ -1,0 +1,17 @@
+stages:
+  - build
+  - mid
+  - bgd
+build:
+  stage: build
+  script:
+    - mvn clean
+    - mvn install -Dmaven.test.skip=true -P test
+    - "if docker images | grep micro-leaf-server | awk '{ print $1}';then
+       docker rmi $(docker images | grep micro-leaf-server | awk '{ print $3}');
+       fi"
+    - docker login -u admin -p admin123 192.168.1.153:7000
+    - docker build -t 192.168.1.153:7000/micro-leaf-server:v1.0.1 .
+    - docker push 192.168.1.153:7000/micro-leaf-server:v1.0.1
+  tags:
+    - 'k8s-pre'
